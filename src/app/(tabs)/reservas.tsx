@@ -17,7 +17,8 @@ import type { EstadoPermiso } from '@/types';
 const TEXTOS_PERMISO: Record<EstadoPermiso, string> = {
   cargando: 'Consultando el permiso de notificaciones…',
   concedido: 'Las notificaciones están permitidas.',
-  preguntable: 'Las notificaciones están desactivadas.',
+  preguntable:
+    'Las notificaciones están desactivadas. Activá “Recordarme” en un préstamo para pedir el permiso.',
   bloqueado: 'Las notificaciones están bloqueadas en el sistema.',
 };
 
@@ -98,8 +99,7 @@ export default function MisReservas() {
         <Text style={estilos.permisoTexto}>
           {TEXTOS_PERMISO[estadoNotificaciones]}
         </Text>
-        {estadoNotificaciones === 'bloqueado' ||
-        estadoNotificaciones === 'preguntable' ? (
+        {estadoNotificaciones === 'bloqueado' ? (
           <Boton
             titulo="Revisar permiso"
             variante="secundario"

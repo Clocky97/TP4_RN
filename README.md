@@ -34,6 +34,10 @@ Escanear el QR con **Expo Go** (Android o iOS) en un teléfono conectado a la mi
 La app fue pensada para un teléfono real: la cámara y las notificaciones locales no se
 pueden probar completas en el emulador ni en la vista web.
 
+Para probar el escáner con un libro físico, los dos ISBN reales que usé son
+**9788437604947** (*Cien años de soledad*, Cátedra) y **9788437604572** (*Rayuela*,
+Cátedra).
+
 Credenciales del personal (fijas en `src/constants/biblioteca.ts`):
 
 - usuario: `personal`
