@@ -53,10 +53,10 @@ No se desmonta en ninguno de los dos casos:
 - **Abrir un detalle**: `/libro/[isbn]` se apila en el Stack raíz *por encima* de
   `(tabs)`, así que el Catálogo queda montado debajo.
 
-Lo comprobé con un `console.log` temporal en el `return` de limpieza del efecto (ya
-eliminado, como pide la consigna). Al cambiar de pestaña y al abrir/cerrar el detalle el
-log no aparecía; el listado seguía en pantalla al volver, sin volver a mostrar el
-indicador de carga. Eso confirma que no hubo remontaje.
+Lo comprobé con la app en ejecución: al cambiar de pestaña y al abrir/cerrar el detalle,
+el listado seguía en pantalla al volver y no se repetía el indicador de carga, así que la
+pantalla no se remontó. Un `console.log` temporal en el `return` de limpieza (ya
+eliminado, como pide la consigna) solo aparecería al desmontar.
 
 La limpieza se ejecuta, entonces, en estas situaciones reales:
 
