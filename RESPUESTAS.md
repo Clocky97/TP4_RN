@@ -460,7 +460,7 @@ coherente (sin eso, Expo Router emite una advertencia en el arranque).
 
 En `src/app/(tabs)/reservas.tsx` uso **las dos**, con roles distintos:
 
-- `useFocusEffect` (39-43) vuelve a consultar el permiso cada vez que la pestaña gana el
+- `useFocusEffect` (40-44) vuelve a consultar el permiso cada vez que la pestaña gana el
   foco. Sirve, por ejemplo, si el permiso se cambió desde `/permisos/notificaciones` o si
   la pestaña estuvo oculta mientras cambiaba.
 - `usePermiso` escucha `AppState` (`usePermiso.ts` 48-57) y llama a `consultar()` cuando
