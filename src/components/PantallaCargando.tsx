@@ -1,0 +1,32 @@
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+
+import { colores, espaciado, tamanios } from '../constants/tema';
+
+type Props = {
+  mensaje?: string;
+};
+
+export function PantallaCargando({ mensaje = 'Cargando…' }: Props) {
+  return (
+    <View style={estilos.contenedor}>
+      <ActivityIndicator size="large" color={colores.primario} />
+      <Text style={estilos.texto}>{mensaje}</Text>
+    </View>
+  );
+}
+
+const estilos = StyleSheet.create({
+  contenedor: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: espaciado.md,
+    backgroundColor: colores.fondo,
+    padding: espaciado.lg,
+  },
+  texto: {
+    fontSize: tamanios.cuerpo,
+    color: colores.textoSuave,
+    textAlign: 'center',
+  },
+});
