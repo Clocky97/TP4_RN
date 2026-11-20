@@ -1,0 +1,128 @@
+import type { Libro } from '../types';
+
+export const LIBROS: Libro[] = [
+  {
+    isbn: '9788437604947',
+    titulo: 'Cien años de soledad',
+    autor: 'Gabriel García Márquez',
+    anio: 1967,
+    ejemplares: 0,
+  },
+  {
+    isbn: '9788437604572',
+    titulo: 'Rayuela',
+    autor: 'Julio Cortázar',
+    anio: 1963,
+    ejemplares: 0,
+  },
+  {
+    isbn: '9788420633114',
+    titulo: 'El Aleph',
+    autor: 'Jorge Luis Borges',
+    anio: 1949,
+    ejemplares: 2,
+  },
+  {
+    isbn: '9788420633121',
+    titulo: 'Ficciones',
+    autor: 'Jorge Luis Borges',
+    anio: 1944,
+    ejemplares: 1,
+  },
+  {
+    isbn: '9788499890944',
+    titulo: '1984',
+    autor: 'George Orwell',
+    anio: 1949,
+    ejemplares: 3,
+  },
+  {
+    isbn: '9788499894430',
+    titulo: 'Fahrenheit 451',
+    autor: 'Ray Bradbury',
+    anio: 1953,
+    ejemplares: 2,
+  },
+  {
+    isbn: '9788497592437',
+    titulo: 'Crónica de una muerte anunciada',
+    autor: 'Gabriel García Márquez',
+    anio: 1981,
+    ejemplares: 1,
+  },
+  {
+    isbn: '9789507312724',
+    titulo: 'El túnel',
+    autor: 'Ernesto Sabato',
+    anio: 1948,
+    ejemplares: 2,
+  },
+  {
+    isbn: '9789500392822',
+    titulo: 'Martín Fierro',
+    autor: 'José Hernández',
+    anio: 1872,
+    ejemplares: 4,
+  },
+  {
+    isbn: '9788498381498',
+    titulo: 'El principito',
+    autor: 'Antoine de Saint-Exupéry',
+    anio: 1943,
+    ejemplares: 0,
+  },
+  {
+    isbn: '9788420412146',
+    titulo: 'Don Quijote de la Mancha',
+    autor: 'Miguel de Cervantes',
+    anio: 1605,
+    ejemplares: 3,
+  },
+  {
+    isbn: '9788499926223',
+    titulo: 'Sapiens: de animales a dioses',
+    autor: 'Yuval Noah Harari',
+    anio: 2011,
+    ejemplares: 2,
+  },
+  {
+    isbn: '9788499897967',
+    titulo: 'Breves respuestas a las grandes preguntas',
+    autor: 'Stephen Hawking',
+    anio: 2018,
+    ejemplares: 1,
+  },
+  {
+    isbn: '9788401242199',
+    titulo: 'La casa de los espíritus',
+    autor: 'Isabel Allende',
+    anio: 1982,
+    ejemplares: 2,
+  },
+  {
+    isbn: '9788420464169',
+    titulo: 'Ensayo sobre la ceguera',
+    autor: 'José Saramago',
+    anio: 1995,
+    ejemplares: 1,
+  },
+  {
+    isbn: '9788432217388',
+    titulo: 'El nombre de la rosa',
+    autor: 'Umberto Eco',
+    anio: 1980,
+    ejemplares: 2,
+  },
+  {
+    isbn: '9788478887019',
+    titulo: 'Harry Potter y la piedra filosofal',
+    autor: 'J. K. Rowling',
+    anio: 1997,
+    ejemplares: 5,
+  },
+];
+
+export const ESPERAS_INICIALES: Record<string, string[]> = {
+  '9788437604947': ['Ana Gómez', 'Luis Benítez'],
+  '9788437604572': ['Sofía Acosta'],
+};
