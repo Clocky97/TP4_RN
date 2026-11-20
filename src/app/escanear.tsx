@@ -1,5 +1,5 @@
 import { CameraView } from 'expo-camera';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
@@ -12,12 +12,18 @@ import { buscarLibro } from '@/lib/catalogo';
 import { esIsbn, limpiarIsbn } from '@/lib/isbn';
 
 export default function Escanear() {
-  const { estado } = usePermiso('camara');
+  const { estado, consultar } = usePermiso('camara');
   const [codigo, setCodigo] = useState('');
   const [mensaje, setMensaje] = useState('');
   const navegando = useRef(false);
   const ultimoAviso = useRef<{ codigo: string; momento: number } | null>(
     null,
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      void consultar();
+    }, [consultar]),
   );
 
   const procesar = useCallback((valor: string) => {

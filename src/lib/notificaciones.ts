@@ -27,37 +27,39 @@ export async function prepararCanalAsync(): Promise<void> {
   }
   await setNotificationChannelAsync(CANAL_PRESTAMOS, {
     name: 'Recordatorios de préstamos',
-    description: 'Avisos para devolver los libros antes de la fecha límite',
     importance: AndroidImportance.DEFAULT,
-    sound: 'default',
-  });
+  }).catch(() => undefined);
 }
 
 export async function activarRecordatorioAsync(
   titulo: string,
 ): Promise<string | null> {
-  await prepararCanalAsync();
-  const actual = await getPermissionsAsync();
-  let concedido = actual.granted;
-  if (!concedido && actual.canAskAgain) {
-    const pedido = await requestPermissionsAsync();
-    concedido = pedido.granted;
-  }
-  if (!concedido) {
+  try {
+    await prepararCanalAsync();
+    const actual = await getPermissionsAsync();
+    let concedido = actual.granted;
+    if (!concedido && actual.canAskAgain) {
+      const pedido = await requestPermissionsAsync();
+      concedido = pedido.granted;
+    }
+    if (!concedido) {
+      return null;
+    }
+    return await scheduleNotificationAsync({
+      content: {
+        title: 'Devolvé tu libro',
+        body: `Acordate de devolver “${titulo}” antes de la fecha límite.`,
+        sound: 'default',
+      },
+      trigger: {
+        type: SchedulableTriggerInputTypes.TIME_INTERVAL,
+        seconds: SEGUNDOS_RECORDATORIO,
+        channelId: CANAL_PRESTAMOS,
+      },
+    });
+  } catch {
     return null;
   }
-  return scheduleNotificationAsync({
-    content: {
-      title: 'Devolvé tu libro',
-      body: `Acordate de devolver “${titulo}” antes de la fecha límite.`,
-      sound: 'default',
-    },
-    trigger: {
-      type: SchedulableTriggerInputTypes.TIME_INTERVAL,
-      seconds: SEGUNDOS_RECORDATORIO,
-      channelId: CANAL_PRESTAMOS,
-    },
-  });
 }
 
 export async function cancelarRecordatorioAsync(
@@ -72,18 +74,22 @@ export async function cancelarRecordatorioAsync(
 export async function avisarReservaListaAsync(
   titulo: string,
 ): Promise<boolean> {
-  const permiso = await getPermissionsAsync();
-  if (!permiso.granted) {
+  try {
+    const permiso = await getPermissionsAsync();
+    if (!permiso.granted) {
+      return false;
+    }
+    await prepararCanalAsync();
+    await scheduleNotificationAsync({
+      content: {
+        title: 'Tu reserva está lista',
+        body: `Te guardamos “${titulo}” en el mostrador de la biblioteca.`,
+        sound: 'default',
+      },
+      trigger: Platform.OS === 'android' ? { channelId: CANAL_PRESTAMOS } : null,
+    });
+    return true;
+  } catch {
     return false;
   }
-  await prepararCanalAsync();
-  await scheduleNotificationAsync({
-    content: {
-      title: 'Tu reserva está lista',
-      body: `Te guardamos “${titulo}” en el mostrador de la biblioteca.`,
-      sound: 'default',
-    },
-    trigger: Platform.OS === 'android' ? { channelId: CANAL_PRESTAMOS } : null,
-  });
-  return true;
 }

@@ -56,20 +56,26 @@ export default function MisReservas() {
 
   const cambiarRecordatorio = async (isbn: string, activar: boolean) => {
     setOcupado(isbn);
-    const resultado = await alternarRecordatorio(isbn, activar);
-    setOcupado(null);
-    setMensaje(
-      resultado.permisoDenegado
-        ? 'No pudimos activar el recordatorio porque las notificaciones están bloqueadas. Revisá el permiso y volvé a intentarlo.'
-        : '',
-    );
+    try {
+      const resultado = await alternarRecordatorio(isbn, activar);
+      setMensaje(
+        resultado.permisoDenegado
+          ? 'No pudimos activar el recordatorio porque las notificaciones están bloqueadas. Revisá el permiso y volvé a intentarlo.'
+          : '',
+      );
+    } finally {
+      setOcupado(null);
+    }
   };
 
   const confirmarDevolucion = async (isbn: string) => {
     setOcupado(isbn);
-    await devolver(isbn);
-    setOcupado(null);
-    setMensaje('Registramos la devolución y cancelamos su recordatorio.');
+    try {
+      await devolver(isbn);
+      setMensaje('Registramos la devolución y cancelamos su recordatorio.');
+    } finally {
+      setOcupado(null);
+    }
   };
 
   const sinReservas =

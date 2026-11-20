@@ -60,6 +60,7 @@ function AccesoPersonal() {
 export default function TabsLayout() {
   return (
     <Tabs
+      backBehavior="initialRoute"
       screenOptions={{
         tabBarActiveTintColor: colores.primario,
         tabBarInactiveTintColor: colores.textoSuave,
