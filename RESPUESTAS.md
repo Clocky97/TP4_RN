@@ -375,7 +375,7 @@ muchas veces y, en el peor caso, advertencias del navegador por demasiadas panta
 #### b) `useRef`, no `useState`
 
 Usé `const navegando = useRef(false)` (`src/app/escanear.tsx` 18) y lo consulto/escribo
-en `procesar` (24-26, 44).
+en `procesar` (30-32, 50).
 
 Un `useState` en `true` en el primer escaneo **no alcanza** porque el valor que lee el
 callback es el de la clausura del render que creó el handler: cuando llegan los escaneos
@@ -385,7 +385,7 @@ llamado, aunque sea en el mismo frame, ya lo ve en `true`.
 
 #### c) Por qué `replace` para ir al detalle
 
-`router.replace(\`/libro/${isbn}\`)` (`escanear.tsx` 46) sustituye la pantalla del
+`router.replace(\`/libro/${isbn}\`)` (`escanear.tsx` 52) sustituye la pantalla del
 escáner por el detalle. Al tocar atrás se vuelve al Catálogo, que es el lugar desde donde
 se entró.
 
@@ -395,8 +395,8 @@ pantalla intermedia que ya cumplió su función.
 
 #### d) ISBN que no está en el catálogo
 
-`procesar` limpia el código y valida 13 dígitos (`escanear.tsx` 27-31). Si el ISBN no
-existe (32-43):
+`procesar` limpia el código y valida 13 dígitos (`escanear.tsx` 33-37). Si el ISBN no
+existe (38-48):
 
 - Muestra un mensaje claro con el ISBN leído y no navega.
 - No pone `navegando` en `true`, así que se puede seguir escaneando.
@@ -416,7 +416,7 @@ existe (32-43):
 | `bibliotecaipf://buscar?q=borges` | Los resultados de Borges, con el campo ya completo. | `(tabs)` con el Catálogo. | `buscar.tsx` 14-23 (lee `q`) y `useBusqueda`. |
 | `bibliotecaipf://mostrador` (sin sesión) | Vuelve al **Catálogo** (con el link “Personal” en el header). | `(tabs)`. | `Stack.Protected guard={sesion}` en `_layout.tsx` 84-86: la ruta no existe hasta iniciar sesión, así que el navegador vuelve al ancla. |
 | `bibliotecaipf://reserva` | La pestaña “Mis reservas”. | `(tabs)` con el Catálogo como ancla. | `src/app/reserva.tsx` (`<Redirect href="/reservas" />`). |
-| `bibliotecaipf://escanear` (cámara bloqueada) | El escáner con el aviso “La cámara está bloqueada”, el botón “Revisar permiso” y el formulario para escribir el ISBN. | `(tabs)` con el Catálogo. | `escanear.tsx` 64-84 (ramas de `estado`) y `permisos/[recurso].tsx`. |
+| `bibliotecaipf://escanear` (cámara bloqueada) | El escáner con el aviso “La cámara está bloqueada”, el botón “Revisar permiso” y el formulario para escribir el ISBN. | `(tabs)` con el Catálogo. | `escanear.tsx` 61-90 (ramas de `estado`) y `permisos/[recurso].tsx`. |
 
 **¿Por qué `/libro/123` llega al detalle aunque el libro no exista?** Porque Expo Router
 resuelve la URL contra el **árbol de archivos**, no contra los datos: `libro/[isbn].tsx`
@@ -427,6 +427,10 @@ La responsabilidad es compartida: el router entrega la ruta y la pantalla valida
 datos antes de mostrarlos. En mi app, el detalle valida formato y existencia y muestra un
 mensaje con salida (29-44). En un sistema real, además el backend respondería 404 y la
 pantalla traduciría ese caso a un mensaje para la persona, nunca al texto técnico.
+
+Las pestañas usan `backBehavior="initialRoute"` (`src/app/(tabs)/_layout.tsx` 63) para que
+el atrás vuelva a la primera pestaña y para que el `anchor: 'index'` del layout de tabs sea
+coherente (sin eso, Expo Router emite una advertencia en el arranque).
 
 ---
 
@@ -462,6 +466,12 @@ En `src/app/(tabs)/reservas.tsx` uso **las dos**, con roles distintos:
 - `usePermiso` escucha `AppState` (`usePermiso.ts` 48-57) y llama a `consultar()` cuando
   la app vuelve a `active`. Eso cubre la vuelta de los Ajustes del sistema.
 
+En `/escanear` también uso `useFocusEffect` (`escanear.tsx` 23-27) para reconsultar el
+permiso al volver de la pantalla previa. Lo agregué después de probar en el teléfono:
+al conceder la cámara en `/permisos/camara`, el escáner seguía mostrando “Necesitamos tu
+cámara” porque su instancia de `usePermiso` no se enteraba del cambio (la app nunca pasó a
+segundo plano). Con el refresco al recuperar el foco, vuelve con la cámara prendida.
+
 Si usara **solo** `useFocusEffect`, la pantalla mostraría un estado viejo al volver de
 Ajustes: el permiso estaría concedido en el sistema pero la tarjeta seguiría diciendo
 “bloqueadas” (y el botón “Revisar permiso”) hasta cambiar de pestaña y volver. Si usara
@@ -488,6 +498,12 @@ La app nunca abre el diálogo del sistema sola: primero muestra la tarjeta de
 | 5 | Toca “Escanear” otra vez. | `/escanear` muestra “La cámara está bloqueada”, el botón “Revisar permiso” y el formulario manual. La app sigue usable. | `denied` | `false` |
 | 6 | “Abrir Ajustes” → habilita la cámara → vuelve a la app. | Al volver, el listener de `AppState` reconsulta: la pantalla pasa a “Permiso concedido” y el botón **Continuar** vuelve a `/escanear`, que ya muestra la cámara. | `granted` | `true` (irrelevante) |
 
+En la prueba con el Moto G23 usé `adb shell pm revoke` para repetir el recorrido desde
+cero. Como Android recordaba que el permiso se había concedido y se revocó, **el primer
+“No permitir” ya dejó `canAskAgain=false`** y la app mostró “Abrir Ajustes” en el paso 2.
+En una instalación limpia el bloqueo aparece recién en la segunda negativa, como muestra la
+tabla; la captura 13/14 corresponde al caso observado.
+
 #### a) El mismo recorrido en iOS
 
 Cambia en el **paso 3**: en iOS el diálogo del sistema se muestra **una sola vez**. Después
@@ -497,7 +513,7 @@ directo a “El permiso está bloqueado” con **Abrir Ajustes** (no vuelve a of
 
 #### b) La línea que decide entre “Continuar” y “Abrir Ajustes”
 
-En `src/app/permisos/[recurso].tsx` (93-101):
+En `src/app/permisos/[recurso].tsx` (99-107):
 
 ```tsx
 {estado === 'bloqueado' ? (
@@ -594,11 +610,17 @@ están permitidas por defecto (la persona las apaga desde los Ajustes) y
 `requestPermissionsAsync` resuelve concedido sin diálogo. El canal sigue siendo
 obligatorio, así que el orden no cambia; lo que cambia es que no hay paso de permiso.
 
+En Expo Go (SDK 58) crear el canal con `description` y `sound: 'default'` lanzaba una
+`NullPointerException` y dejaba el interruptor colgado; lo dejé con solo `name` e
+`importance`, con `catch` defensivo (`lib/notificaciones.ts` 24-32) y con un `finally` en
+la pantalla (`reservas.tsx` 57-69) para que el botón nunca quede deshabilitado. En una
+build propia el plugin de `app.json` crea el canal con el ícono y el color configurados.
+
 #### d) Permiso denegado y entrega desde el mostrador
 
 `entregarSiguiente` (`BibliotecaContext.tsx` 241-279) llama a
 `avisarReservaListaAsync` (267), que consulta el permiso **en ese momento**
-(`lib/notificaciones.ts` 75-78):
+(`lib/notificaciones.ts` 78-81):
 
 ```ts
 const permiso = await getPermissionsAsync();
@@ -681,14 +703,22 @@ probar mientras tanto porque el módulo ya viene incluido en la app de Expo Go.
 
 #### c) Qué no se pudo verificar del todo en Expo Go
 
-- **El texto de propósito**: en Android 14 el diálogo de cámara no muestra texto propio
-  (Android no lo admite; el texto es de iOS); en iOS, Expo Go muestra su propio mensaje,
-  no el de `app.json`. Se verifica con una development build.
-- **El canal `prestamos`**: Expo Go tiene su propia app y sus propios canales; el nombre,
-  la importancia y el color de `expo-notifications` configurados en `app.json` solo se
-  aplican en una build propia.
-- **“Abrir Ajustes”**: `Linking.openSettings()` en Expo Go abre los Ajustes de **Expo
-  Go**, no los de Biblioteca IPF. En una build propia abre la ficha correcta.
+Probé todo el recorrido en un Moto G23 con Android 14 y esto es lo que no coincide con una
+build propia:
+
+- **El texto de propósito**: en Android 14 el diálogo del sistema es genérico (“¿Permitir
+  que Expo Go tome fotos y grabe videos?”), no muestra el texto de `cameraPermission`.
+  Además, Expo Go tiene su propio diálogo por proyecto (“Biblioteca IPF needs permissions
+  for accessing camera… Allow?”), en inglés y ajeno a la app. En iOS el texto de propósito
+  tampoco se ve en Expo Go. Se verifica con una development build.
+- **El canal `prestamos`**: en Expo Go, crear el canal con `description` y
+  `sound: 'default'` falló con una `NullPointerException`. Por eso el canal quedó con lo
+  mínimo (`name` + `importance`) y la app tolera el error. El nombre, la importancia y el
+  color configurados en `app.json` solo se aplican en una build propia.
+- **“Abrir Ajustes”**: `Linking.openSettings()` abrió la ficha de **Expo Go**, no la de
+  Biblioteca IPF (es lo esperable: la app que corre es Expo Go). Se comprobó igual el
+  recorrido completo: permisos → cámara → “Permitir solo con la app en uso”, y al volver
+  la pantalla se actualizó sola por el listener de `AppState`.
 - **El ícono/color de la notificación** (`color`, `defaultChannel`) y el comportamiento
   exacto del permiso en Android 13+ dependen del binario.
 
@@ -918,9 +948,9 @@ con `usePermiso` para la lógica y la pantalla `/permisos/[recurso]` para la exp
 | --- | --- | --- |
 | `obtenerLibros()` falla | “No pudimos cargar el catálogo” + el detalle en lenguaje claro + botón **Reintentar**. | `useLibros.ts` 30-38 (mensaje, sin el error técnico) y `(tabs)/index.tsx` 26-34 (pantalla con acción). |
 | Se abre `/libro/abc` | “No encontramos ese libro / El código del libro tiene que tener 13 dígitos” + botón **Volver al catálogo**. | `libro/[isbn].tsx` 21 y 29-44 (`esIsbn` y `buscarLibro`). |
-| Se escanea un ISBN que no está en el catálogo | “No encontramos un libro con el ISBN … Podés seguir escaneando o escribirlo a mano”; no navega. | `escanear.tsx` 32-43 (`procesar`). |
-| La cámara está bloqueada | “La cámara está bloqueada”, botón **Revisar permiso** y el formulario de ISBN siempre disponible. | `escanear.tsx` 64-84 y `permisos/[recurso].tsx` 86-101. |
-| Las notificaciones están denegadas | La tarjeta con “Las notificaciones están desactivadas” (y la indicación de activar “Recordarme”) o “bloqueadas en el sistema” con el botón **Revisar permiso**. Al intentar activar el recordatorio, un mensaje y un aviso dentro de `/reservas`. | `(tabs)/reservas.tsx` 17-22 y 56-65; `BibliotecaContext.tsx` 203-222. |
+| Se escanea un ISBN que no está en el catálogo | “No encontramos un libro con el ISBN … Podés seguir escaneando o escribirlo a mano”; no navega. | `escanear.tsx` 38-48 (`procesar`). |
+| La cámara está bloqueada | “La cámara está bloqueada”, botón **Revisar permiso** y el formulario de ISBN siempre disponible. | `escanear.tsx` 61-90 y `permisos/[recurso].tsx` 92-107. |
+| Las notificaciones están denegadas | La tarjeta con “Las notificaciones están desactivadas” (y la indicación de activar “Recordarme”) o “bloqueadas en el sistema” con el botón **Revisar permiso**. Al intentar activar el recordatorio, un mensaje y un aviso dentro de `/reservas`. | `(tabs)/reservas.tsx` 17-23 y 57-69; `BibliotecaContext.tsx` 203-222. |
 | Se intenta reservar un libro ya reservado | En el detalle, en lugar del botón aparece “Ya estás en la lista de espera, en el puesto N” o “Ya tenés este libro en préstamo”. En el modal, “Confirmar” está deshabilitado y hay un mensaje. | `libro/[isbn].tsx` 70-83; `reservar/[isbn].tsx` 36, 46-60 y 81-91; `BibliotecaContext.tsx` 151-153 (segunda validación). |
 | “Entregar al siguiente” con la lista vacía | El botón no se muestra porque el mostrador solo lista libros con espera; si igual se llamara, la función devuelve `null` y la pantalla muestra “Esa lista de espera ya está vacía”. | `mostrador.tsx` 17-20 y 26-29; `BibliotecaContext.tsx` 243-246. |
 | Login con clave incorrecta | “El usuario o la clave no son correctos. Volvé a intentarlo.” | `login.tsx` 19-25 y 53. |

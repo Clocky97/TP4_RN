@@ -210,17 +210,69 @@ $ echo $?
 ```
 
 También se verificó el bundle con `npx expo export --platform android` y
-`npx expo export --platform web`, ambos sin errores.
+`npx expo export --platform web`, ambos sin errores, y `npx expo-doctor` (20/20 checks).
+
+## Prueba en el teléfono
+
+- Dispositivo: **Motorola Moto G23**, Android **14** (SDK 34), 720 × 1600.
+- App: **Expo Go** con SDK 58, bundle servido por Metro desde la computadora.
+- La red del instituto aísla a los clientes entre sí, así que el teléfono no podía bajar
+  el bundle por la IP de la LAN. Se resolvió con `adb reverse tcp:8081 tcp:8081` y
+  abriendo `exp://127.0.0.1:8081` (el resto de los deep links, con
+  `exp://127.0.0.1:8081/--/…`).
+
+Recorrido probado en el teléfono:
+
+1. Catálogo: carga, error con “Reintentar”, datos, “Vistos recientemente” y recientes
+   persistidos después de cerrar la app.
+2. Buscador por URL (`/buscar?q=borges`) y resultados.
+3. Detalle inexistente (`/libro/123`) y detalle real con el título en el header.
+4. Reserva con ejemplares (préstamo a 7 días) y sin ejemplares (puesto 3 en la espera).
+5. Escáner: permiso pendiente, diálogo del sistema, denegado, bloqueado con “Abrir
+   Ajustes”, vuelta desde Ajustes con la pantalla actualizada sola, y cámara concedida.
+6. ISBN escrito a mano: abre el detalle y al volver no regresa al escáner.
+7. Notificación: “Recordarme” pide el permiso, programa el aviso y llega a los 15 segundos;
+   al devolver el libro el recordatorio se cancela (no aparece).
+8. Mostrador: login, entrega a Ana y a Luis (desencola), entrega a “Alumno IPF” con
+   notificación “Tu reserva está lista”, y cierre de sesión.
+9. `/reserva` redirige a `/reservas`; `/mostrador` sin sesión vuelve al Catálogo; una URL
+   inexistente muestra la 404 con la dirección pedida.
 
 ## Capturas
 
-En [`capturas/`](./capturas) están las capturas de la vista web del proyecto (catálogo
-cargando, con datos y con error; buscador; detalle inexistente; reserva con y sin
-ejemplares; mis reservas; escáner en el estado de permiso; pantalla previa de permisos;
-mostrador antes y después de entregar; 404).
+En [`capturas/`](./capturas) están las capturas tomadas en el teléfono:
 
-La cámara y las notificaciones necesitan un teléfono real (Expo Go o development build);
-en la vista web no existen. Las capturas que faltan son: los cuatro estados del escáner
-con la cámara, el diálogo de permiso con el texto de propósito y la notificación recibida.
-Para obtenerlas: abrir la app en Expo Go, entrar a `/escanear`, aceptar la cámara y apoyar
-un EAN-13 real; y en `/reservas` activar “Recordarme” en un préstamo y esperar 15 segundos.
+| Archivo | Estado |
+| --- | --- |
+| `01-catalogo-cargando.png` | Catálogo con el indicador de carga |
+| `02-catalogo-con-datos.png` | Catálogo con los 17 libros |
+| `03-catalogo-con-error.png` | Error de la API con “Reintentar” |
+| `04-buscador.png` | Búsqueda “borges” con resultados |
+| `05-detalle-inexistente.png` | `/libro/123` con el mensaje de validación |
+| `06-reserva-sin-ejemplares.png` | Confirmación con lista de espera (puesto 3) |
+| `07-reserva-con-ejemplares.png` | Confirmación con préstamo a 7 días |
+| `08-mis-reservas.png` | Préstamo, recordatorio y reserva en espera |
+| `09-mis-reservas-dos-prestamos.png` | Dos préstamos activos |
+| `10-escanear-permiso.png` | Escáner con el permiso pendiente |
+| `11-permisos-camara.png` | Pantalla previa de la cámara |
+| `12-escaner-camera.png` | Cámara concedida y campo manual |
+| `13-permisos-camara-bloqueado.png` | Permiso bloqueado con “Abrir Ajustes” |
+| `14-escaner-bloqueado.png` | Escáner bloqueado, sin perder el ISBN manual |
+| `15-permisos-camara-concedido.png` | Vuelta desde Ajustes: “Permiso concedido” |
+| `16-dialogo-permiso-camara.png` | Diálogo del sistema de Android 14 |
+| `17-dialogo-permiso-notificaciones.png` | Diálogo de notificaciones al activar “Recordarme” |
+| `18-recordatorio-activo.png` | Interruptor activo y permiso concedido |
+| `19-notificacion-recordatorio.png` | Notificación local recibida |
+| `20-notificacion-reserva.png` | Notificación “Tu reserva está lista” |
+| `21-notificacion-cancelada.png` | Sin notificación después de devolver |
+| `22-mostrador-antes.png` | Mostrador con las dos listas de espera |
+| `23-mostrador-despues.png` | Después de entregar, con el aviso |
+| `24-pantalla-404.png` | URL inexistente |
+| `25-expo-go-dialogo-camara.png` | Diálogo de permiso propio de Expo Go |
+| `26-ajustes-camara.png` | Ajustes del sistema con el permiso de cámara |
+
+El estado “cargando” del escáner (mientras `useCameraPermissions` resuelve) dura un
+instante y no llegó a capturarse; los otros tres estados están en las capturas 10 a 15.
+El escaneo con un código de barras físico no se pudo hacer en esta sesión (la cámara del
+teléfono no tenía un libro a la vista); el camino manual sí está probado y la lectura
+EAN-13 queda para probar con un libro real.
